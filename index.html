@@ -66,17 +66,22 @@
             // This regular expression is now combined.
             // 1. :[\p{L}a-zA-Z0-9_]+: -> Matches colon-based shortcodes (like :smile: or :망치와_렌치:)
             // 2. \p{Emoji_Presentation}|\p{Extended_Pictographic} -> Matches standard Unicode emojis (like ✨, 🛠️, 👍)
-            // The | operator means "OR", so it finds either pattern.
-            // The 'u' flag is essential for Unicode property escapes (\p{...}) to work.
             const emoteAndEmojiRegex = /:[\p{L}a-zA-Z0-9_]+:|\p{Emoji_Presentation}|\p{Extended_Pictographic}/gu;
             
-            const resultText = inputText.replace(emoteAndEmojiRegex, '');
+            // Step 1: Remove all emotes and emojis.
+            let resultText = inputText.replace(emoteAndEmojiRegex, '');
             
-            // This cleanup logic is now corrected.
-            // It specifically replaces two or more space characters with a single space.
-            // It does NOT affect newline characters (\n), preserving the text structure.
-            // The .trim() has been removed to preserve leading/trailing newlines.
-            document.getElementById('outputText').value = resultText.replace(/ {2,}/g, ' ');
+            // Step 2: Clean up spaces.
+            // First, collapse multiple spaces into a single space. This handles "Hello  World".
+            resultText = resultText.replace(/ {2,}/g, ' ');
+
+            // Step 3: Remove a single space from the beginning of a line.
+            // (^|\n) captures either the start of the string or a newline. We then match a single space.
+            // We replace it with the captured group ($1), effectively deleting the space without affecting indentation.
+            // This handles ":emote: Hello" becoming "Hello" and preserves line structure.
+            resultText = resultText.replace(/(^|\n) /g, '$1');
+
+            document.getElementById('outputText').value = resultText;
         }
 
         // Function to copy the resulting text to the user's clipboard.
